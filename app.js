@@ -7,14 +7,19 @@ const session=require('express-session');
 const FileStore=require('session-file-store')(session);
 const passport=require('passport');
 const authenticate=require('./authenticate');
+const config=require('./config');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var dishRouter=require('./routes/dishRouter');
 var leaderRouter=require('./routes/leaderRouter');
 var promoRouter=require('./routes/promoRouter');
+var uploadRouter=require('./routes/uploadRouter');
+var favoriteRouter=require('./routes/favoriteRouter');
+var commentRouter=require('./routes/commentRouter');
+
 const mongoose=require('mongoose');
-const url='mongodb://localhost:27017/conFusion';
+const url=config.mongoUrl;
 const connect=mongoose.connect(url);
 
 connect.then((db)=>{
@@ -22,6 +27,15 @@ connect.then((db)=>{
 },err=>{console.log(err);});
 
 var app = express();
+
+app.all('*',(req,res,next)=>{
+	if(req.secure){
+		return next();
+	}
+	else{
+		res.redirect(307, 'https://'+req.hostname+':'+app.get('secPort')+req.url);
+	}
+})
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -31,16 +45,16 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 //app.use(cookieParser('12345-67890-09876-53421'));
-app.use(session({
+/*app.use(session({
 	name:'session-id',
 	secret:'12345-67890-09876-53421',
 	resave:false,
 	saveUninitialized:false,
 	store:new FileStore()
-}));
+}));*/
 
 app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -83,7 +97,7 @@ app.use('/users', usersRouter);
 	
 }*/
 
-const auth=(req,res,next)=>{
+/*const auth=(req,res,next)=>{
 
 	if(!req.user){
 		const err=new Error('You are not Authenticated');
@@ -97,7 +111,7 @@ const auth=(req,res,next)=>{
 };
 
 
-app.use(auth)
+app.use(auth)*/
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -105,6 +119,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
 app.use('/leaders',leaderRouter);
+app.use('/imageUpload',uploadRouter);
+app.use('/favorites',favoriteRouter);
+app.use('/comments',commentRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -3,7 +3,7 @@ const schema=mongoose.Schema;
 require('mongoose-currency').loadType(mongoose);
 const Currency=mongoose.Types.Currency;
 
-const commentSchema=new schema({
+/*const commentSchema=new schema({
 	rating:{
 		type:Number,
 		min:1,
@@ -15,18 +15,17 @@ const commentSchema=new schema({
 		required:true
 	},
 	author:{
-		type:String,
-		required:true
+		type:mongoose.Schema.Types.ObjectId,
+		ref:'User'
 	}
 },{
 	timestamps:true
-});
+});*/
 
 const dishSchema=new schema({
 	name:{
 		type:String,
-		required:true,
-		unique:true
+		required:true
 	},
 	description:{
 		type:String,
@@ -52,8 +51,8 @@ const dishSchema=new schema({
 	featured:{
 		type:Boolean,
 		default:false
-	},
-	comments:[commentSchema]
+	}
+	//comments:[commentSchema]
 },{
 	timestamps: true
 });
